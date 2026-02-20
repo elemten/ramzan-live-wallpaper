@@ -162,7 +162,7 @@ export default function WallpaperGenerator() {
   }
 
   return (
-    <div className="relative z-10 mx-auto w-full max-w-7xl px-4 pb-10 pt-6 sm:px-6 sm:pb-14 sm:pt-10 lg:px-8">
+    <div className="relative z-10 mx-auto w-full max-w-7xl overflow-x-hidden px-4 pb-10 pt-6 sm:px-6 sm:pb-14 sm:pt-10 lg:px-8">
       <div className="relative overflow-hidden rounded-[2rem] border border-[#3d2f18]/45 bg-[linear-gradient(145deg,rgba(7,12,24,0.96)_0%,rgba(5,9,19,0.97)_52%,rgba(3,6,13,0.98)_100%)] shadow-[0_40px_120px_rgba(0,0,0,0.58)]">
         <div className="pointer-events-none absolute -left-32 top-[-7rem] h-72 w-72 rounded-full bg-[#c29a5b]/9 blur-3xl" />
         <div className="pointer-events-none absolute -right-20 bottom-[-6rem] h-72 w-72 rounded-full bg-[#1f3762]/35 blur-3xl" />
@@ -182,7 +182,7 @@ export default function WallpaperGenerator() {
 
             <div className="mt-6 grid gap-5">
               <div className="rounded-2xl border border-[#3b2f1e]/55 bg-[#050b17]/70 p-4">
-                <div className="flex flex-wrap items-center gap-3">
+                <div className="flex min-w-0 flex-col items-start gap-3 sm:flex-row sm:flex-wrap sm:items-center">
                   <button
                     type="button"
                     onClick={useCurrentLocation}
@@ -191,7 +191,7 @@ export default function WallpaperGenerator() {
                   >
                     {isLocating ? "Locating..." : "Use My Current Location"}
                   </button>
-                  <p className="text-xs leading-5 text-[#b39a72]">
+                  <p className="w-full break-words text-xs leading-5 text-[#b39a72] sm:w-auto">
                     If location is blocked, ask Siri &quot;What are my coordinates?&quot; and paste them below.
                   </p>
                 </div>
