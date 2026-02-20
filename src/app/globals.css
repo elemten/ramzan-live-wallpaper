@@ -12,6 +12,12 @@
   --font-mono: "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  overflow-x: hidden;
+}
+
 body {
   min-height: 100vh;
   background: var(--background);
@@ -19,6 +25,7 @@ body {
   font-family: var(--font-body), "Avenir Next", "Segoe UI", sans-serif;
   line-height: 1.55;
   text-rendering: optimizeLegibility;
+  overflow-x: hidden;
 }
 
 h1,

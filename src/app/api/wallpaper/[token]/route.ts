@@ -1,5 +1,6 @@
 import sharp from "sharp";
 
+import { ensureSharpFontConfig } from "@/lib/sharp-fonts";
 import { getRamadanTimings } from "@/lib/ramadan-data";
 import { decodeWallpaperToken } from "@/lib/token";
 import { createLifeWallpaperSvg, createRamadanWallpaperSvg } from "@/lib/wallpaper-svg";
@@ -72,6 +73,7 @@ export async function GET(
     filenamePrefix = "ramadan-calendar";
   }
 
+  await ensureSharpFontConfig();
   const png = await sharp(Buffer.from(svg)).png({ compressionLevel: 9 }).toBuffer();
   const body = new Uint8Array(png);
 

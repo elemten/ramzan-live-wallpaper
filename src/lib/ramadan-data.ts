@@ -44,6 +44,50 @@ interface AlAdhanResponse {
   };
 }
 
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function fetchWithRetry(
+  input: URL | string,
+  init: RequestInit & { timeoutMs?: number },
+  retries: number,
+): Promise<Response | null> {
+  const timeoutMs = init.timeoutMs ?? 9000;
+  const requestInit = { ...init };
+  delete (requestInit as { timeoutMs?: number }).timeoutMs;
+
+  for (let attempt = 0; attempt <= retries; attempt += 1) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+    try {
+      const response = await fetch(input, { ...requestInit, signal: controller.signal });
+      clearTimeout(timer);
+
+      if (response.ok) {
+        return response;
+      }
+
+      if (attempt < retries && (response.status >= 500 || response.status === 429)) {
+        await sleep(250 * (attempt + 1));
+        continue;
+      }
+
+      return null;
+    } catch {
+      clearTimeout(timer);
+      if (attempt < retries) {
+        await sleep(250 * (attempt + 1));
+        continue;
+      }
+      return null;
+    }
+  }
+
+  return null;
+}
+
 function cleanTime(value: string): string {
   const parsed = value.match(/\d{1,2}:\d{2}/);
   return parsed ? parsed[0] : value;
@@ -80,14 +124,19 @@ async function geocodeOnce(name: string): Promise<GeocodedCity | null> {
   url.searchParams.set("language", "en");
   url.searchParams.set("format", "json");
 
-  const response = await fetch(url, {
-    headers: {
-      "User-Agent": "life-calendar-wallpaper/1.0",
+  const response = await fetchWithRetry(
+    url,
+    {
+      headers: {
+        "User-Agent": "life-calendar-wallpaper/1.0",
+      },
+      next: { revalidate: 86400 },
+      timeoutMs: 9000,
     },
-    next: { revalidate: 86400 },
-  });
+    1,
+  );
 
-  if (!response.ok) {
+  if (!response) {
     return null;
   }
 
@@ -156,14 +205,19 @@ export async function getRamadanTimings(
   url.searchParams.set("method", String(calculationMethod));
   url.searchParams.set("timezonestring", timeZone);
 
-  const response = await fetch(url, {
-    headers: {
-      "User-Agent": "life-calendar-wallpaper/1.0",
+  const response = await fetchWithRetry(
+    url,
+    {
+      headers: {
+        "User-Agent": "life-calendar-wallpaper/1.0",
+      },
+      next: { revalidate: 1800 },
+      timeoutMs: 10000,
     },
-    next: { revalidate: 1800 },
-  });
+    2,
+  );
 
-  if (!response.ok) {
+  if (!response) {
     return null;
   }
 

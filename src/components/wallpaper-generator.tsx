@@ -168,15 +168,11 @@ export default function WallpaperGenerator() {
         <div className="pointer-events-none absolute -right-20 bottom-[-6rem] h-72 w-72 rounded-full bg-[#1f3762]/35 blur-3xl" />
 
         <div className="relative grid gap-7 p-4 sm:p-7 lg:grid-cols-[1.04fr_0.96fr] lg:gap-10 lg:p-9">
-          <section className="rounded-[1.6rem] border border-[#4f3c1f]/42 bg-[#060d1c]/82 p-5 shadow-[inset_0_0_0_1px_rgba(169,132,72,0.12)] sm:p-7">
+          <section className="min-w-0 rounded-[1.6rem] border border-[#4f3c1f]/42 bg-[#060d1c]/82 p-5 shadow-[inset_0_0_0_1px_rgba(169,132,72,0.12)] sm:p-7">
             <p className="text-[9px] uppercase tracking-[0.42em] text-[#997747]">Live iOS Wallpaper</p>
-            <h1 className="mt-3 font-[var(--font-heading)] text-3xl font-semibold leading-[0.98] text-[#f3dec0] sm:text-5xl">
+            <h1 className="mt-3 break-words font-[var(--font-heading)] text-[2.25rem] font-semibold leading-[1.02] text-[#f3dec0] sm:text-5xl">
               Ramadan Wallpaper Generator
             </h1>
-            <p className="mt-4 max-w-2xl text-sm leading-7 text-[#cdbb9e] sm:text-base">
-              One mode only: Ramadan calendar. Generate a dynamic wallpaper URL from exact coordinates and use it in
-              iOS Shortcuts.
-            </p>
 
             <div className="mt-7 rounded-2xl border border-[#5a4322]/55 bg-[#09152b]/75 p-4 shadow-[0_18px_40px_rgba(0,0,0,0.35)] sm:p-5">
               <p className="text-[10px] uppercase tracking-[0.28em] text-[#a38251]">Calendar Type</p>
@@ -309,24 +305,24 @@ export default function WallpaperGenerator() {
               </div>
             </article>
 
-            <article className="rounded-[1.6rem] border border-[#4a391f]/45 bg-[#071226]/85 p-5 shadow-[inset_0_0_0_1px_rgba(181,141,78,0.12)] sm:p-6">
+            <article className="min-w-0 rounded-[1.6rem] border border-[#4a391f]/45 bg-[#071226]/85 p-5 shadow-[inset_0_0_0_1px_rgba(181,141,78,0.12)] sm:p-6">
               <p className="text-[10px] uppercase tracking-[0.3em] text-[#ab8751]">Shortcut Steps</p>
-              <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm leading-6 text-[#dbc8a8]">
-                <li>Add `URL` action and paste the generated wallpaper URL.</li>
-                <li>Add `Get Contents of URL` action.</li>
-                <li>Add `Set Wallpaper` and choose Lock Screen.</li>
-                <li>Disable `Show Preview` and `Crop to Subject`.</li>
+              <ol className="mt-3 list-decimal space-y-2 break-words pl-5 text-sm leading-6 text-[#dbc8a8]">
+                <li>Add URL action and paste the generated wallpaper URL.</li>
+                <li>Add Get Contents of URL action.</li>
+                <li>Add Set Wallpaper and choose Lock Screen.</li>
+                <li>Disable Show Preview and Crop to Subject.</li>
               </ol>
             </article>
 
-            <article className="rounded-[1.6rem] border border-[#4a391f]/45 bg-[#071226]/85 p-5 shadow-[inset_0_0_0_1px_rgba(181,141,78,0.12)] sm:p-6">
+            <article className="min-w-0 rounded-[1.6rem] border border-[#4a391f]/45 bg-[#071226]/85 p-5 shadow-[inset_0_0_0_1px_rgba(181,141,78,0.12)] sm:p-6">
               <p className="text-[10px] uppercase tracking-[0.3em] text-[#ab8751]">Android Steps</p>
-              <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm leading-6 text-[#dbc8a8]">
-                <li>Install `Tasker` (recommended) or `MacroDroid` from Play Store.</li>
+              <ol className="mt-3 list-decimal space-y-2 break-words pl-5 text-sm leading-6 text-[#dbc8a8]">
+                <li>Install Tasker (recommended) or MacroDroid from Play Store.</li>
                 <li>Create a daily automation at your preferred time.</li>
-                <li>Add an `HTTP GET` step and paste this same generated wallpaper URL.</li>
-                <li>Save the image as `/Download/ramadan-wallpaper.png`.</li>
-                <li>Add `Set Wallpaper` and choose Lock Screen (or Both).</li>
+                <li>Add an HTTP GET step and paste this same generated wallpaper URL.</li>
+                <li>Save the image as /Download/ramadan-wallpaper.png.</li>
+                <li>Add Set Wallpaper and choose Lock Screen (or Both).</li>
                 <li>Allow app permissions and disable battery optimization.</li>
               </ol>
             </article>
