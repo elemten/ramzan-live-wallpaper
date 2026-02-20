@@ -42,7 +42,7 @@ function lifeResponse(config: LifeWallpaperConfig, token: string, origin: string
 export async function POST(request: Request): Promise<Response> {
   try {
     const body = (await request.json()) as TokenRequestBody;
-    const mode = body.mode ?? "life";
+    const mode = body.mode ?? "ramadan";
     const origin = getOrigin(request.headers);
 
     if (mode === "life") {
@@ -78,7 +78,7 @@ export async function POST(request: Request): Promise<Response> {
         const cityQuery = (body.city ?? "").trim();
         if (!cityQuery) {
           return NextResponse.json(
-            { error: "Provide city, or exact latitude/longitude + timezone." },
+            { error: "Provide exact latitude/longitude, or enter a city name." },
             { status: 400 },
           );
         }

@@ -147,7 +147,7 @@ export function createRamadanWallpaperSvg(
   options: RenderOptions,
 ): string {
   const hijriLine = escapeXml(timings.hijriDate);
-  const dayLine = escapeXml(`Day ${timings.hijriDay} of Ramadan`);
+  const dayLine = "رمضان کریم";
   const titleLine = escapeXml(config.title || "RAMADAN CALENDAR");
 
   const entries: Array<{ label: string; value: string; icon: string }> = [
@@ -316,7 +316,7 @@ export function createRamadanWallpaperSvg(
 
     <style>
       .header-title { font: 600 ${Math.round(options.width * 0.062)}px "Cinzel", "Times New Roman", serif; fill: url(#goldText); text-anchor: middle; letter-spacing: 0.7px; }
-      .header-sub { font: 500 ${Math.round(options.width * 0.032)}px "Cinzel", "Times New Roman", serif; fill: #B89E70; text-anchor: middle; opacity: 0.84; letter-spacing: 0.35px; }
+      .header-sub { font: 500 ${Math.round(options.width * 0.032)}px "Noto Nastaliq Urdu", "Noto Naskh Arabic", "Segoe UI", "Arial Unicode MS", serif; fill: #B89E70; text-anchor: middle; opacity: 0.84; letter-spacing: 0; direction: rtl; unicode-bidi: plaintext; }
       .mode-title { font: 500 ${Math.round(options.width * 0.026)}px "Cinzel", "Times New Roman", serif; fill: #AC946A; text-anchor: middle; letter-spacing: 2.2px; opacity: 0.9; }
       .col-label { font: 560 ${Math.round(options.width * 0.027)}px "Cinzel", "Times New Roman", serif; fill: #C3A36D; text-anchor: middle; letter-spacing: 0.15px; }
       .col-value { font: 680 ${Math.round(options.width * 0.031)}px "Cinzel", "Times New Roman", serif; fill: #F8EFD9; text-anchor: middle; letter-spacing: 0.12px; }
