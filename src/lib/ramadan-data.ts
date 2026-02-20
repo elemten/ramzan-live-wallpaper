@@ -44,6 +44,8 @@ interface AlAdhanResponse {
   };
 }
 
+const ISLAMIC_DAY_ROLLOVER_HOUR = 19; // 7:00 PM local time
+
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -101,6 +103,29 @@ function isoDateInTimeZone(date: Date, timeZone: string): string {
     day: "2-digit",
   });
   return formatter.format(date);
+}
+
+function hourInTimeZone(date: Date, timeZone: string): number {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    hour: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(date);
+
+  const hourPart = parts.find((part) => part.type === "hour")?.value;
+  const parsedHour = hourPart ? Number(hourPart) : Number.NaN;
+  return Number.isInteger(parsedHour) ? parsedHour : 0;
+}
+
+function ramadanApiDateForRun(now: Date, timeZone: string): string {
+  const localHour = hourInTimeZone(now, timeZone);
+  if (localHour < ISLAMIC_DAY_ROLLOVER_HOUR) {
+    return isoDateInTimeZone(now, timeZone);
+  }
+
+  // After evening cutoff, use next civil date so Hijri day aligns with post-Maghrib usage.
+  const nextDay = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+  return isoDateInTimeZone(nextDay, timeZone);
 }
 
 function toDdMmYyyy(isoDate: string): string {
@@ -198,7 +223,7 @@ export async function getRamadanTimings(
   calculationMethod: number,
   now: Date,
 ): Promise<RamadanTimings | null> {
-  const isoDate = isoDateInTimeZone(now, timeZone);
+  const isoDate = ramadanApiDateForRun(now, timeZone);
   const url = new URL(`https://api.aladhan.com/v1/timings/${toDdMmYyyy(isoDate)}`);
   url.searchParams.set("latitude", String(latitude));
   url.searchParams.set("longitude", String(longitude));
