@@ -5,6 +5,7 @@ import {
   normalizeLifeConfig,
   normalizeRamadanConfig,
   type LifeWallpaperConfig,
+  type RamadanTheme,
   type WallpaperMode,
 } from "@/lib/wallpaper-config";
 import { encodeWallpaperToken } from "@/lib/token";
@@ -19,6 +20,15 @@ interface TokenRequestBody {
   latitude?: number;
   longitude?: number;
   calculationMethod?: number;
+  theme?: RamadanTheme;
+}
+
+interface ThemeVariantResponse {
+  theme: RamadanTheme;
+  token: string;
+  wallpaperUrl: string;
+  wallpaperPath: string;
+  setupUrl: string;
 }
 
 function getOrigin(headers: Headers): string {
@@ -37,6 +47,17 @@ function lifeResponse(config: LifeWallpaperConfig, token: string, origin: string
     wallpaperPath,
     setupUrl: `${origin}/setup/${token}`,
   });
+}
+
+function themeVariantResponse(theme: RamadanTheme, token: string, origin: string): ThemeVariantResponse {
+  const wallpaperPath = `/api/wallpaper/${token}?w=1290&h=2796`;
+  return {
+    theme,
+    token,
+    wallpaperUrl: `${origin}${wallpaperPath}`,
+    wallpaperPath,
+    setupUrl: `${origin}/setup/${token}`,
+  };
 }
 
 export async function POST(request: Request): Promise<Response> {
@@ -71,6 +92,7 @@ export async function POST(request: Request): Promise<Response> {
             timeZone: body.timeZone,
             calculationMethod: body.calculationMethod,
             title: body.title,
+            theme: body.theme,
           })
         : null;
 
@@ -100,6 +122,7 @@ export async function POST(request: Request): Promise<Response> {
           timeZone: city.timeZone,
           calculationMethod: body.calculationMethod,
           title: body.title,
+          theme: body.theme,
         });
       }
 
@@ -107,15 +130,29 @@ export async function POST(request: Request): Promise<Response> {
         return NextResponse.json({ error: "Could not build ramadan config." }, { status: 400 });
       }
 
-      const token = encodeWallpaperToken(config);
-      const wallpaperPath = `/api/wallpaper/${token}?w=1290&h=2796`;
+      const selectedTheme = body.theme === "girly" ? "girly" : "classic";
+      const classicConfig = normalizeRamadanConfig({ ...config, theme: "classic" });
+      const girlyConfig = normalizeRamadanConfig({ ...config, theme: "girly" });
+      if (!classicConfig || !girlyConfig) {
+        return NextResponse.json({ error: "Could not build themed ramadan config." }, { status: 400 });
+      }
+
+      const classicVariant = themeVariantResponse("classic", encodeWallpaperToken(classicConfig), origin);
+      const girlyVariant = themeVariantResponse("girly", encodeWallpaperToken(girlyConfig), origin);
+      const primary = selectedTheme === "girly" ? girlyVariant : classicVariant;
+
       return NextResponse.json({
         mode: "ramadan",
-        token,
-        config,
-        wallpaperUrl: `${origin}${wallpaperPath}`,
-        wallpaperPath,
-        setupUrl: `${origin}/setup/${token}`,
+        theme: selectedTheme,
+        token: primary.token,
+        config: { ...config, theme: selectedTheme },
+        wallpaperUrl: primary.wallpaperUrl,
+        wallpaperPath: primary.wallpaperPath,
+        setupUrl: primary.setupUrl,
+        variants: {
+          classic: classicVariant,
+          girly: girlyVariant,
+        },
       });
     }
 

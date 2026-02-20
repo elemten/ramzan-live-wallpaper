@@ -1,4 +1,5 @@
 export type WallpaperMode = "life" | "ramadan";
+export type RamadanTheme = "classic" | "girly";
 
 export interface LifeWallpaperConfig {
   mode: "life";
@@ -16,6 +17,7 @@ export interface RamadanWallpaperConfig {
   timeZone: string;
   calculationMethod: number;
   title: string;
+  theme: RamadanTheme;
 }
 
 export type WallpaperConfig = LifeWallpaperConfig | RamadanWallpaperConfig;
@@ -29,6 +31,7 @@ export const DEFAULT_LIFE_CONFIG: LifeWallpaperConfig = {
 
 export const DEFAULT_RAMADAN_TITLE = "RAMADAN CALENDAR";
 export const DEFAULT_RAMADAN_METHOD = 2;
+export const DEFAULT_RAMADAN_THEME: RamadanTheme = "classic";
 
 const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -61,6 +64,10 @@ function cleanText(value: unknown, fallback: string, maxLen: number): string {
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
+}
+
+export function normalizeRamadanTheme(value: unknown): RamadanTheme {
+  return value === "girly" ? "girly" : DEFAULT_RAMADAN_THEME;
 }
 
 export function isValidTimeZone(value: string): boolean {
@@ -103,6 +110,7 @@ export function normalizeRamadanConfig(
   const calculationMethod = Number.isFinite(methodRaw)
     ? clamp(Math.round(methodRaw), 0, 23)
     : DEFAULT_RAMADAN_METHOD;
+  const theme = normalizeRamadanTheme(input.theme);
 
   if (!timeZone || !Number.isFinite(latitude) || !Number.isFinite(longitude)) {
     return null;
@@ -117,5 +125,6 @@ export function normalizeRamadanConfig(
     timeZone,
     calculationMethod,
     title: cleanText(input.title, DEFAULT_RAMADAN_TITLE, 28),
+    theme,
   };
 }

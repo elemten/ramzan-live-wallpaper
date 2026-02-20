@@ -1,5 +1,6 @@
 import type { LifeWallpaperConfig, RamadanWallpaperConfig } from "@/lib/wallpaper-config";
 import type { RamadanTimings } from "@/lib/ramadan-data";
+import { createThemeMotif, getRamadanThemeTokens } from "@/lib/ramadan-theme";
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const LIFE_EXPECTANCY_YEARS = 100;
@@ -146,6 +147,8 @@ export function createRamadanWallpaperSvg(
   timings: RamadanTimings,
   options: RenderOptions,
 ): string {
+  const theme = getRamadanThemeTokens(config.theme);
+  const isRosePink = config.theme === "girly";
   const hijriLine = escapeXml(timings.hijriDate);
   const dayLine = "رمضان کریم";
   const titleLine = escapeXml(config.title || "RAMADAN CALENDAR");
@@ -159,29 +162,37 @@ export function createRamadanWallpaperSvg(
     { label: "Isha", value: timings.isha, icon: "icon-isha" },
   ];
 
-  const panelWidth = options.width * 0.928;
+  const panelWidth = isRosePink ? options.width * 0.87 : options.width * 0.928;
   const panelLeft = (options.width - panelWidth) / 2;
-  const cardGap = options.width * 0.009;
-  const cardWidth = (panelWidth - cardGap * (entries.length - 1)) / entries.length;
-  const cardHeight = options.height * 0.093;
-  const cardTop = options.height * 0.572;
+  const columnCount = isRosePink ? 2 : entries.length;
+  const cardGapX = isRosePink ? options.width * 0.02 : options.width * 0.009;
+  const cardGapY = isRosePink ? options.height * 0.016 : 0;
+  const cardWidth = (panelWidth - cardGapX * (columnCount - 1)) / columnCount;
+  const cardHeight = isRosePink ? options.height * 0.076 : options.height * 0.093;
+  const cardTop = isRosePink ? options.height * 0.565 : options.height * 0.572;
 
   const rowCenterY = cardTop + cardHeight / 2;
-  const iconSize = Math.min(cardWidth * 0.34, cardHeight * 0.22);
+  const iconSize = isRosePink
+    ? Math.min(cardWidth * 0.16, cardHeight * 0.45)
+    : Math.min(cardWidth * 0.34, cardHeight * 0.22);
   const mosqueBaseSize = 512;
-  const mosqueMaxWidth = options.width * 0.78;
-  const mosqueMaxHeight = options.height * 0.29;
+  const mosqueMaxWidth = isRosePink ? options.width * 0.72 : options.width * 0.78;
+  const mosqueMaxHeight = isRosePink ? options.height * 0.24 : options.height * 0.29;
   const mosqueScale = Math.min(mosqueMaxWidth / mosqueBaseSize, mosqueMaxHeight / mosqueBaseSize);
   const mosqueSize = mosqueBaseSize * mosqueScale;
-  const mosqueBottomInset = options.height * 0.012;
+  const mosqueBottomInset = isRosePink ? options.height * 0.006 : options.height * 0.012;
   const mosqueX = (options.width - mosqueSize) / 2;
   const mosqueY = options.height - mosqueSize - mosqueBottomInset;
+  const decorativeLayer = createThemeMotif(config.theme, options.width, options.height);
 
   const columns = entries
     .map((entry, idx) => {
-      const x = panelLeft + idx * (cardWidth + cardGap);
-      const iconX = x + (cardWidth - iconSize) / 2;
-      const iconBaseY = cardTop + cardHeight * 0.13;
+      const row = isRosePink ? Math.floor(idx / columnCount) : 0;
+      const col = isRosePink ? idx % columnCount : idx;
+      const x = panelLeft + col * (cardWidth + cardGapX);
+      const y = cardTop + row * (cardHeight + cardGapY);
+      const iconX = isRosePink ? x + cardWidth * 0.08 : x + (cardWidth - iconSize) / 2;
+      const iconBaseY = isRosePink ? y + (cardHeight - iconSize) / 2 : y + cardHeight * 0.13;
       const iconOffsetY =
         entry.label === "Fajr" || entry.label === "Maghrib"
           ? cardHeight * 0.012
@@ -189,22 +200,31 @@ export function createRamadanWallpaperSvg(
             ? cardHeight * 0.006
             : 0;
       const iconY = iconBaseY + iconOffsetY;
+      const labelX = isRosePink ? x + cardWidth * 0.24 : x + cardWidth / 2;
+      const labelY = isRosePink ? y + cardHeight * 0.59 : y + cardHeight * 0.58;
+      const valueX = isRosePink ? x + cardWidth * 0.92 : x + cardWidth / 2;
+      const valueY = isRosePink ? y + cardHeight * 0.59 : y + cardHeight * 0.83;
+      const labelClass = isRosePink ? "row-label" : "col-label";
+      const valueClass = isRosePink ? "row-value" : "col-value";
+
       return `
-      <g transform="translate(${x.toFixed(2)}, ${cardTop.toFixed(2)})">
+      <g transform="translate(${x.toFixed(2)}, ${y.toFixed(2)})">
         <rect width="${cardWidth.toFixed(2)}" height="${cardHeight.toFixed(
           2,
-        )}" rx="${(cardWidth * 0.14).toFixed(2)}" fill="url(#card)" stroke="url(#goldBorder)" stroke-width="1.35"/>
+        )}" rx="${(cardWidth * theme.card.outerRadiusScale).toFixed(
+          2,
+        )}" fill="url(#card)" stroke="url(#goldBorder)" stroke-width="${theme.card.borderWidth}" filter="url(#cardGlow)"/>
         <rect x="2" y="2" width="${(cardWidth - 4).toFixed(2)}" height="${(cardHeight - 4).toFixed(
           2,
-        )}" rx="${(cardWidth * 0.12).toFixed(2)}" fill="none" stroke="#D9BA86" stroke-opacity="0.11" stroke-width="1"/>
+        )}" rx="${(cardWidth * theme.card.innerRadiusScale).toFixed(2)}" fill="none" stroke="${theme.card.innerStroke}" stroke-opacity="${theme.card.innerStrokeOpacity}" stroke-width="1"/>
       </g>
       <use href="#${entry.icon}" x="${iconX.toFixed(2)}" y="${iconY.toFixed(2)}" width="${iconSize.toFixed(
         2,
       )}" height="${iconSize.toFixed(2)}" class="icon-line" />
-      <text x="${(x + cardWidth / 2).toFixed(2)}" y="${(cardTop + cardHeight * 0.58).toFixed(2)}" class="col-label">${escapeXml(
+      <text x="${labelX.toFixed(2)}" y="${labelY.toFixed(2)}" class="${labelClass}">${escapeXml(
         entry.label,
       )}</text>
-      <text x="${(x + cardWidth / 2).toFixed(2)}" y="${(cardTop + cardHeight * 0.83).toFixed(2)}" class="col-value">${escapeXml(
+      <text x="${valueX.toFixed(2)}" y="${valueY.toFixed(2)}" class="${valueClass}">${escapeXml(
         to12HourLabel(entry.value),
       )}</text>`;
     })
@@ -214,36 +234,46 @@ export function createRamadanWallpaperSvg(
 <svg width="${options.width}" height="${options.height}" viewBox="0 0 ${options.width} ${options.height}" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <linearGradient id="bgMain" x1="0" y1="0" x2="${options.width}" y2="${options.height}">
-      <stop offset="0%" stop-color="#030509" />
-      <stop offset="50%" stop-color="#071226" />
-      <stop offset="100%" stop-color="#020307" />
+      <stop offset="0%" stop-color="${theme.background.start}" />
+      <stop offset="50%" stop-color="${theme.background.mid}" />
+      <stop offset="100%" stop-color="${theme.background.end}" />
     </linearGradient>
     <radialGradient id="vignette" cx="50%" cy="42%" r="72%">
-      <stop offset="0%" stop-color="#15294D" stop-opacity="0.26" />
-      <stop offset="68%" stop-color="#070D1C" stop-opacity="0.14" />
-      <stop offset="100%" stop-color="#000000" stop-opacity="0.55" />
+      <stop offset="0%" stop-color="${theme.vignette.inner}" stop-opacity="${theme.vignette.innerOpacity}" />
+      <stop offset="68%" stop-color="${theme.vignette.mid}" stop-opacity="${theme.vignette.midOpacity}" />
+      <stop offset="100%" stop-color="${theme.vignette.outer}" stop-opacity="${theme.vignette.outerOpacity}" />
     </radialGradient>
     <pattern id="grain" width="8" height="8" patternUnits="userSpaceOnUse">
       <rect width="8" height="8" fill="transparent" />
-      <circle cx="1" cy="1" r="0.45" fill="#FFFFFF" fill-opacity="0.02" />
-      <circle cx="6" cy="2" r="0.4" fill="#C8D4F2" fill-opacity="0.015" />
-      <circle cx="3" cy="5" r="0.5" fill="#FFFFFF" fill-opacity="0.018" />
-      <circle cx="7" cy="7" r="0.35" fill="#9CB2DD" fill-opacity="0.012" />
+      <circle cx="1" cy="1" r="0.45" fill="${theme.grain.a}" fill-opacity="${theme.grain.aOpacity}" />
+      <circle cx="6" cy="2" r="0.4" fill="${theme.grain.b}" fill-opacity="${theme.grain.bOpacity}" />
+      <circle cx="3" cy="5" r="0.5" fill="${theme.grain.c}" fill-opacity="${theme.grain.cOpacity}" />
+      <circle cx="7" cy="7" r="0.35" fill="${theme.grain.d}" fill-opacity="${theme.grain.dOpacity}" />
     </pattern>
     <linearGradient id="card" x1="0" y1="0" x2="${panelWidth}" y2="${cardHeight}">
-      <stop offset="0%" stop-color="#12213B" />
-      <stop offset="100%" stop-color="#0A1426" />
+      <stop offset="0%" stop-color="${theme.card.start}" />
+      <stop offset="100%" stop-color="${theme.card.end}" />
     </linearGradient>
     <linearGradient id="goldBorder" x1="0" y1="0" x2="${panelWidth}" y2="0">
-      <stop offset="0%" stop-color="#8D6C3B" />
-      <stop offset="50%" stop-color="#DAB887" />
-      <stop offset="100%" stop-color="#8A6838" />
+      <stop offset="0%" stop-color="${theme.card.borderStart}" />
+      <stop offset="50%" stop-color="${theme.card.borderMid}" />
+      <stop offset="100%" stop-color="${theme.card.borderEnd}" />
     </linearGradient>
     <linearGradient id="goldText" x1="0" y1="0" x2="${options.width}" y2="0">
-      <stop offset="0%" stop-color="#9A7742" />
-      <stop offset="50%" stop-color="#E1C28F" />
-      <stop offset="100%" stop-color="#9A7742" />
+      <stop offset="0%" stop-color="${theme.text.goldStart}" />
+      <stop offset="50%" stop-color="${theme.text.goldMid}" />
+      <stop offset="100%" stop-color="${theme.text.goldEnd}" />
     </linearGradient>
+    <filter id="cardGlow" x="-12%" y="-12%" width="124%" height="124%">
+      <feGaussianBlur stdDeviation="${theme.card.glowStdDeviation}" />
+      <feColorMatrix
+        type="matrix"
+        values="1 0 0 0 0
+                0 1 0 0 0
+                0 0 1 0 0
+                0 0 0 ${theme.card.glowOpacity} 0"
+      />
+    </filter>
 
     <symbol id="icon-sehri" viewBox="0 0 24 24">
       <path d="M3 16.5h18" />
@@ -297,7 +327,7 @@ export function createRamadanWallpaperSvg(
     </symbol>
 
     <symbol id="mosque-outline" viewBox="0 0 512 512">
-      <g fill="none" stroke="#B58E52" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.94">
+      <g fill="none" stroke="${theme.mosque.stroke}" stroke-width="${theme.mosque.width}" stroke-linecap="${theme.mosque.linecap}" stroke-linejoin="${theme.mosque.linejoin}" opacity="${theme.mosque.opacity}">
         <path d="M503.467,494.933H8.533c-4.71,0-8.533,3.823-8.533,8.533S3.823,512,8.533,512h494.933c4.719,0,8.533-3.823,8.533-8.533 S508.186,494.933,503.467,494.933z"/>
         <path d="M418.133,477.867c4.719,0,8.533-3.823,8.533-8.533v-307.2c0-4.71-3.814-8.533-8.533-8.533s-8.533,3.823-8.533,8.533 v162.133h-34.133v-8.533c0-4.71-3.814-8.533-8.533-8.533s-8.533,3.823-8.533,8.533V460.8h-34.133v-68.267 c0-37.641-30.626-68.267-68.267-68.267c-37.641,0-68.267,30.626-68.267,68.267V460.8H153.6V315.733 c0-4.71-3.823-8.533-8.533-8.533c-4.71,0-8.533,3.823-8.533,8.533v8.533H102.4V162.133c0-4.71-3.823-8.533-8.533-8.533 c-4.71,0-8.533,3.823-8.533,8.533v307.2c0,4.71,3.823,8.533,8.533,8.533c4.71,0,8.533-3.823,8.533-8.533v-128h34.133V460.8H128 c-4.71,0-8.533,3.823-8.533,8.533s3.823,8.533,8.533,8.533h256c4.719,0,8.533-3.823,8.533-8.533S388.719,460.8,384,460.8h-8.533 V341.333H409.6v128C409.6,474.044,413.414,477.867,418.133,477.867z M247.467,409.6c-4.71,0-8.533,3.823-8.533,8.533 s3.823,8.533,8.533,8.533V460.8H204.8v-68.267c0-25.318,18.492-46.344,42.667-50.432V409.6z M307.2,460.8h-42.667v-34.133 c4.719,0,8.533-3.823,8.533-8.533s-3.814-8.533-8.533-8.533v-67.499c24.175,4.087,42.667,25.114,42.667,50.432V460.8z"/>
         <path d="M443.733,196.267v17.067c0,4.71,3.814,8.533,8.533,8.533c4.719,0,8.533-3.823,8.533-8.533v-17.067 c0-4.71-3.814-8.533-8.533-8.533C447.548,187.733,443.733,191.556,443.733,196.267z"/>
@@ -316,20 +346,31 @@ export function createRamadanWallpaperSvg(
 
     <style>
       .header-title { font: 600 ${Math.round(options.width * 0.062)}px "Cinzel", "Times New Roman", serif; fill: url(#goldText); text-anchor: middle; letter-spacing: 0.7px; }
-      .header-sub { font: 500 ${Math.round(options.width * 0.032)}px "Noto Nastaliq Urdu", "Noto Naskh Arabic", "Segoe UI", "Arial Unicode MS", serif; fill: #B89E70; text-anchor: middle; opacity: 0.84; letter-spacing: 0; direction: rtl; unicode-bidi: plaintext; }
-      .mode-title { font: 500 ${Math.round(options.width * 0.026)}px "Cinzel", "Times New Roman", serif; fill: #AC946A; text-anchor: middle; letter-spacing: 2.2px; opacity: 0.9; }
-      .col-label { font: 560 ${Math.round(options.width * 0.027)}px "Cinzel", "Times New Roman", serif; fill: #C3A36D; text-anchor: middle; letter-spacing: 0.15px; }
-      .col-value { font: 680 ${Math.round(options.width * 0.031)}px "Cinzel", "Times New Roman", serif; fill: #F8EFD9; text-anchor: middle; letter-spacing: 0.12px; }
-      .icon-line { fill: none; stroke: #C5A164; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+      .header-sub { font: 500 ${Math.round(options.width * 0.032)}px "Noto Nastaliq Urdu", "Noto Naskh Arabic", "Segoe UI", "Arial Unicode MS", serif; fill: ${theme.text.headerSub}; text-anchor: middle; opacity: 0.84; letter-spacing: 0; direction: rtl; unicode-bidi: plaintext; }
+      .mode-title { font: 500 ${Math.round(options.width * 0.026)}px "Cinzel", "Times New Roman", serif; fill: ${theme.text.modeTitle}; text-anchor: middle; letter-spacing: 2.2px; opacity: 0.9; }
+      .col-label { font: 560 ${Math.round(options.width * 0.027)}px "Cinzel", "Times New Roman", serif; fill: ${theme.text.colLabel}; text-anchor: middle; letter-spacing: 0.15px; }
+      .col-value { font: 680 ${Math.round(options.width * 0.031)}px "Cinzel", "Times New Roman", serif; fill: ${theme.text.colValue}; text-anchor: middle; letter-spacing: 0.12px; }
+      .row-label { font: 560 ${Math.round(options.width * 0.029)}px "Cinzel", "Times New Roman", serif; fill: ${theme.text.colLabel}; text-anchor: start; letter-spacing: 0.1px; }
+      .row-value { font: 640 ${Math.round(options.width * 0.028)}px "Cinzel", "Times New Roman", serif; fill: ${theme.text.colValue}; text-anchor: end; letter-spacing: 0.08px; }
+      .icon-line { fill: none; stroke: ${theme.iconStroke}; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+      .theme-crescent { color: ${theme.motif.crescentColor}; opacity: ${theme.motif.crescentOpacity}; }
+      .theme-star { color: ${theme.motif.starColor}; opacity: ${theme.motif.starOpacity}; }
     </style>
   </defs>
   <rect x="0" y="0" width="${options.width}" height="${options.height}" fill="url(#bgMain)" />
   <rect x="0" y="0" width="${options.width}" height="${options.height}" fill="url(#vignette)" />
   <rect x="0" y="0" width="${options.width}" height="${options.height}" fill="url(#grain)" />
+  ${decorativeLayer}
 
-  <text x="${(options.width / 2).toFixed(2)}" y="${(rowCenterY - options.height * 0.142).toFixed(2)}" class="mode-title">${titleLine}</text>
-  <text x="${(options.width / 2).toFixed(2)}" y="${(rowCenterY - options.height * 0.104).toFixed(2)}" class="header-title">${hijriLine}</text>
-  <text x="${(options.width / 2).toFixed(2)}" y="${(rowCenterY - options.height * 0.072).toFixed(2)}" class="header-sub">${dayLine}</text>
+  <text x="${(options.width / 2).toFixed(2)}" y="${(rowCenterY - options.height * (isRosePink ? 0.175 : 0.142)).toFixed(
+    2,
+  )}" class="mode-title">${titleLine}</text>
+  <text x="${(options.width / 2).toFixed(2)}" y="${(rowCenterY - options.height * (isRosePink ? 0.136 : 0.104)).toFixed(
+    2,
+  )}" class="header-title">${hijriLine}</text>
+  <text x="${(options.width / 2).toFixed(2)}" y="${(rowCenterY - options.height * (isRosePink ? 0.104 : 0.072)).toFixed(
+    2,
+  )}" class="header-sub">${dayLine}</text>
   ${columns}
 
   <g transform="translate(${mosqueX.toFixed(2)}, ${mosqueY.toFixed(2)}) scale(${mosqueScale.toFixed(5)})">

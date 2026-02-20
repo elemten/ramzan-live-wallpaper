@@ -3,6 +3,7 @@ import {
   normalizeRamadanConfig,
   type LifeWallpaperConfig,
   type RamadanWallpaperConfig,
+  type RamadanTheme,
   type WallpaperConfig,
 } from "@/lib/wallpaper-config";
 
@@ -24,6 +25,7 @@ interface RamadanTokenPayloadV2 {
   z: string;
   cm?: number;
   t: string;
+  th?: RamadanTheme;
 }
 
 interface LegacyLifeTokenV1 {
@@ -70,6 +72,7 @@ export function encodeWallpaperToken(config: WallpaperConfig): string {
       z: safeConfig.timeZone,
       cm: safeConfig.calculationMethod,
       t: safeConfig.title,
+      th: safeConfig.theme,
     };
   }
 
@@ -95,6 +98,7 @@ function decodeRamadanV2(parsed: RamadanTokenPayloadV2): RamadanWallpaperConfig 
     timeZone: parsed.z,
     calculationMethod: parsed.cm,
     title: parsed.t,
+    theme: parsed.th,
   });
 }
 

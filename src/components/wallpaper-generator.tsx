@@ -5,17 +5,34 @@ import { useMemo, useState } from "react";
 
 import { DEFAULT_LIFE_CONFIG } from "@/lib/wallpaper-config";
 
-interface TokenResponse {
-  mode: "ramadan" | "life";
+type RamadanTheme = "classic" | "girly";
+
+interface ThemeVariant {
+  theme: RamadanTheme;
+  token: string;
   wallpaperUrl: string;
   wallpaperPath: string;
   setupUrl: string;
+}
+
+interface TokenResponse {
+  mode: "ramadan" | "life";
+  theme?: RamadanTheme;
+  wallpaperUrl: string;
+  wallpaperPath: string;
+  setupUrl: string;
+  variants?: Record<RamadanTheme, ThemeVariant>;
 }
 
 interface RamadanFormState {
   latitude: string;
   longitude: string;
   calculationMethod: number;
+  theme: RamadanTheme;
+}
+
+function themeDisplayName(theme: RamadanTheme): string {
+  return theme === "girly" ? "Rose Pink" : "Navy Blue";
 }
 
 const CALC_METHODS = [
@@ -60,6 +77,7 @@ export default function WallpaperGenerator() {
     latitude: "",
     longitude: "",
     calculationMethod: 2,
+    theme: "classic",
   });
 
   const [result, setResult] = useState<TokenResponse | null>(null);
@@ -69,7 +87,9 @@ export default function WallpaperGenerator() {
   const [copyStatus, setCopyStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const previewUrl = result ? `${result.wallpaperPath}&at=${encodeURIComponent(new Date().toISOString())}` : null;
+  const activeVariant = result?.variants?.[ramadanForm.theme];
+  const previewPath = activeVariant?.wallpaperPath ?? result?.wallpaperPath ?? null;
+  const previewUrl = previewPath ? `${previewPath}&at=${encodeURIComponent(new Date().toISOString())}` : null;
 
   function clearNotices() {
     setError(null);
@@ -127,6 +147,7 @@ export default function WallpaperGenerator() {
           longitude: lon,
           timeZone: detectedTimeZone,
           calculationMethod: ramadanForm.calculationMethod,
+          theme: ramadanForm.theme,
         }),
       });
 
@@ -144,15 +165,15 @@ export default function WallpaperGenerator() {
     }
   }
 
-  async function handleCopyUrl() {
-    if (!result?.wallpaperUrl) {
+  async function handleCopyUrl(url: string) {
+    if (!url) {
       return;
     }
 
     setIsCopying(true);
     setCopyStatus(null);
     try {
-      await copyText(result.wallpaperUrl);
+      await copyText(url);
       setCopyStatus("Wallpaper URL copied.");
     } catch {
       setCopyStatus("Could not copy automatically. Please copy manually.");
@@ -198,7 +219,7 @@ export default function WallpaperGenerator() {
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
-                <label className="grid gap-2">
+                <label className="grid min-w-0 gap-2">
                   <span className="text-sm text-[#cfb790]">Latitude (exact)</span>
                   <input
                     type="number"
@@ -207,10 +228,10 @@ export default function WallpaperGenerator() {
                     placeholder="52.133200"
                     value={ramadanForm.latitude}
                     onChange={(event) => setRamadanForm((prev) => ({ ...prev, latitude: event.target.value }))}
-                    className="h-12 rounded-xl border border-[#5e4725]/65 bg-[#09152b]/75 px-3 text-sm text-[#f7e5c9] outline-none transition placeholder:text-[#8a785a] focus:border-[#c39a5d] focus:shadow-[0_0_0_2px_rgba(212,175,55,0.16)]"
+                    className="h-12 w-full min-w-0 rounded-xl border border-[#5e4725]/65 bg-[#09152b]/75 px-3 text-sm text-[#f7e5c9] outline-none transition placeholder:text-[#8a785a] focus:border-[#c39a5d] focus:shadow-[0_0_0_2px_rgba(212,175,55,0.16)]"
                   />
                 </label>
-                <label className="grid gap-2">
+                <label className="grid min-w-0 gap-2">
                   <span className="text-sm text-[#cfb790]">Longitude (exact)</span>
                   <input
                     type="number"
@@ -219,19 +240,19 @@ export default function WallpaperGenerator() {
                     placeholder="-106.670000"
                     value={ramadanForm.longitude}
                     onChange={(event) => setRamadanForm((prev) => ({ ...prev, longitude: event.target.value }))}
-                    className="h-12 rounded-xl border border-[#5e4725]/65 bg-[#09152b]/75 px-3 text-sm text-[#f7e5c9] outline-none transition placeholder:text-[#8a785a] focus:border-[#c39a5d] focus:shadow-[0_0_0_2px_rgba(212,175,55,0.16)]"
+                    className="h-12 w-full min-w-0 rounded-xl border border-[#5e4725]/65 bg-[#09152b]/75 px-3 text-sm text-[#f7e5c9] outline-none transition placeholder:text-[#8a785a] focus:border-[#c39a5d] focus:shadow-[0_0_0_2px_rgba(212,175,55,0.16)]"
                   />
                 </label>
               </div>
 
-              <label className="grid gap-2">
+              <label className="grid min-w-0 gap-2">
                 <span className="text-sm text-[#cfb790]">Calculation method (optional)</span>
                 <select
                   value={ramadanForm.calculationMethod}
                   onChange={(event) =>
                     setRamadanForm((prev) => ({ ...prev, calculationMethod: Number(event.target.value) }))
                   }
-                  className="h-12 rounded-xl border border-[#5e4725]/65 bg-[#09152b]/75 px-3 text-sm text-[#f6e1c2] outline-none transition focus:border-[#c39a5d] focus:shadow-[0_0_0_2px_rgba(212,175,55,0.16)]"
+                  className="h-12 w-full min-w-0 rounded-xl border border-[#5e4725]/65 bg-[#09152b]/75 px-3 text-sm text-[#f6e1c2] outline-none transition focus:border-[#c39a5d] focus:shadow-[0_0_0_2px_rgba(212,175,55,0.16)]"
                 >
                   {CALC_METHODS.map((method) => (
                     <option key={method.value} value={method.value}>
@@ -240,6 +261,35 @@ export default function WallpaperGenerator() {
                   ))}
                 </select>
               </label>
+
+              <fieldset className="grid gap-2">
+                <legend className="text-sm text-[#cfb790]">Theme</legend>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  <label className="flex min-w-0 items-center gap-2 rounded-xl border border-[#5e4725]/65 bg-[#09152b]/75 px-3 py-3 text-sm text-[#f7e5c9]">
+                    <input
+                      type="radio"
+                      name="theme"
+                      value="classic"
+                      checked={ramadanForm.theme === "classic"}
+                      onChange={() => setRamadanForm((prev) => ({ ...prev, theme: "classic" }))}
+                    />
+                    Navy Blue
+                  </label>
+                  <label className="flex min-w-0 items-center gap-2 rounded-xl border border-[#5e4725]/65 bg-[#09152b]/75 px-3 py-3 text-sm text-[#f7e5c9]">
+                    <input
+                      type="radio"
+                      name="theme"
+                      value="girly"
+                      checked={ramadanForm.theme === "girly"}
+                      onChange={() => setRamadanForm((prev) => ({ ...prev, theme: "girly" }))}
+                    />
+                    Rose Pink
+                  </label>
+                </div>
+                <p className="text-xs text-[#b39a72]">
+                  Generator always returns both URLs. This selection controls your default preview and primary URL.
+                </p>
+              </fieldset>
             </div>
 
             <div className="mt-7">
@@ -257,25 +307,43 @@ export default function WallpaperGenerator() {
 
             {result ? (
               <div className="mt-6 rounded-2xl border border-[#5c4521]/55 bg-[#061228]/70 p-4 shadow-[inset_0_0_0_1px_rgba(188,147,83,0.18)] sm:p-5">
-                <p className="text-[10px] uppercase tracking-[0.28em] text-[#b18b52]">Wallpaper URL</p>
-                <p className="mt-2 break-all rounded-xl border border-[#3f3119]/65 bg-[#040912]/75 p-3 font-mono text-xs leading-5 text-[#f4e2c5] sm:text-sm">
-                  {result.wallpaperUrl}
-                </p>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={handleCopyUrl}
-                    disabled={isCopying}
-                    className="inline-flex h-10 items-center rounded-lg border border-[#7f6235]/75 bg-[#0d172c] px-3 text-xs font-semibold tracking-[0.08em] text-[#f0d8b2] transition hover:border-[#c69e60] disabled:cursor-not-allowed disabled:opacity-55"
-                  >
-                    {isCopying ? "Copying..." : "Copy URL"}
-                  </button>
-                  <a
-                    href={result.setupUrl}
-                    className="inline-flex h-10 items-center rounded-lg border border-[#7f6235]/75 bg-[#0d172c] px-3 text-xs font-semibold tracking-[0.08em] text-[#f0d8b2] transition hover:border-[#c69e60]"
-                  >
-                    Open setup page
-                  </a>
+                <p className="text-[10px] uppercase tracking-[0.28em] text-[#b18b52]">Wallpaper URLs</p>
+                <div className="mt-3 grid gap-3">
+                  {(result.variants
+                    ? [result.variants.classic, result.variants.girly]
+                    : [
+                        {
+                          theme: "classic" as const,
+                          wallpaperUrl: result.wallpaperUrl,
+                          setupUrl: result.setupUrl,
+                        },
+                      ]
+                  ).map((variant) => (
+                    <div key={variant.theme} className="min-w-0 rounded-xl border border-[#3f3119]/65 bg-[#040912]/75 p-3">
+                      <p className="text-[10px] uppercase tracking-[0.2em] text-[#b18b52]">
+                        {themeDisplayName(variant.theme)}
+                      </p>
+                      <p className="mt-2 break-all font-mono text-xs leading-5 text-[#f4e2c5] sm:text-sm">
+                        {variant.wallpaperUrl}
+                      </p>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleCopyUrl(variant.wallpaperUrl)}
+                          disabled={isCopying}
+                          className="inline-flex h-10 w-full items-center justify-center rounded-lg border border-[#7f6235]/75 bg-[#0d172c] px-3 text-xs font-semibold tracking-[0.08em] text-[#f0d8b2] transition hover:border-[#c69e60] disabled:cursor-not-allowed disabled:opacity-55 sm:w-auto"
+                        >
+                          {isCopying ? "Copying..." : `Copy ${themeDisplayName(variant.theme)} URL`}
+                        </button>
+                        <a
+                          href={variant.setupUrl}
+                          className="inline-flex h-10 w-full items-center justify-center rounded-lg border border-[#7f6235]/75 bg-[#0d172c] px-3 text-xs font-semibold tracking-[0.08em] text-[#f0d8b2] transition hover:border-[#c69e60] sm:w-auto"
+                        >
+                          {`Open ${themeDisplayName(variant.theme)} setup`}
+                        </a>
+                      </div>
+                    </div>
+                  ))}
                 </div>
                 {copyStatus ? <p className="mt-3 text-xs text-[#dac294]">{copyStatus}</p> : null}
               </div>
@@ -285,6 +353,7 @@ export default function WallpaperGenerator() {
           <section className="grid gap-5 sm:gap-6">
             <article className="rounded-[1.6rem] border border-[#4a391f]/45 bg-[#071226]/85 p-4 shadow-[inset_0_0_0_1px_rgba(181,141,78,0.12)] sm:p-6">
               <p className="text-[10px] uppercase tracking-[0.3em] text-[#ab8751]">Live Preview</p>
+              <p className="mt-2 text-xs text-[#c2ab85]">Showing: {themeDisplayName(ramadanForm.theme)}</p>
               <div className="relative mt-4 overflow-hidden rounded-[2rem] border border-[#3f3019]/60 bg-[#02050b] p-2 shadow-[0_22px_55px_rgba(0,0,0,0.48)] sm:p-3">
                 <div className="pointer-events-none absolute left-1/2 top-0 z-10 h-9 w-32 -translate-x-1/2 rounded-b-2xl bg-black/75 blur-[1px]" />
                 <div className="pointer-events-none absolute inset-x-5 top-3 z-10 h-12 rounded-full bg-[linear-gradient(180deg,rgba(255,255,255,0.16),rgba(255,255,255,0))] blur-xl" />

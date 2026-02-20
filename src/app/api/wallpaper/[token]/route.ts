@@ -70,7 +70,7 @@ export async function GET(
       return new Response("Could not fetch ramadan timings for this city.", { status: 502 });
     }
     svg = createRamadanWallpaperSvg(config, timings, { width, height, now });
-    filenamePrefix = "ramadan-calendar";
+    filenamePrefix = `ramadan-calendar-${config.theme}`;
   }
 
   await ensureSharpFontConfig();

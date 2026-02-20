@@ -4,6 +4,10 @@ import { notFound } from "next/navigation";
 
 import { decodeWallpaperToken } from "@/lib/token";
 
+function themeDisplayName(theme: "classic" | "girly"): string {
+  return theme === "girly" ? "Rose Pink" : "Navy Blue";
+}
+
 function buildOrigin(headerMap: Headers): string {
   const proto = headerMap.get("x-forwarded-proto") ?? "https";
   const host = headerMap.get("x-forwarded-host") ?? headerMap.get("host");
@@ -56,6 +60,7 @@ export default async function SetupPage({
                   Coordinates: {config.latitude.toFixed(6)}, {config.longitude.toFixed(6)}
                 </li>
                 <li>Calculation method: {config.calculationMethod}</li>
+                <li>Theme: {themeDisplayName(config.theme)}</li>
               </>
             ) : (
               <li>This link uses a legacy non-Ramadan token.</li>
