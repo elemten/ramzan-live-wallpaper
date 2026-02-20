@@ -56,3 +56,9 @@ Automation:
 1. Push repo to GitHub
 2. Import to Vercel
 3. Deploy with default Next.js settings
+
+## Android Setup
+
+For Android automation (Tasker / MacroDroid / KLWP), use:
+
+- `ANDROID_SETUP.md`

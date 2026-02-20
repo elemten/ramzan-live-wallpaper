@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0b0c0f;
-  --foreground: #f5f6fa;
+  --background: #03060c;
+  --foreground: #f6e6cf;
 }
 
 @theme inline {
@@ -13,13 +13,36 @@
 }
 
 body {
+  min-height: 100vh;
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-body), "Avenir Next", "Segoe UI", sans-serif;
+  line-height: 1.55;
+  text-rendering: optimizeLegibility;
 }
 
 h1,
-h2 {
-  font-family: var(--font-heading), "Avenir Next Condensed", sans-serif;
-  letter-spacing: 0.02em;
+h2,
+h3 {
+  font-family: var(--font-heading), "Times New Roman", serif;
+  letter-spacing: 0.01em;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #6e542d #101829;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: #101829;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: #6e542d;
+  border-radius: 999px;
 }

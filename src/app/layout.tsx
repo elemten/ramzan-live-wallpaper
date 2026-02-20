@@ -1,22 +1,23 @@
 import type { Metadata } from "next";
-import { Bebas_Neue, Manrope } from "next/font/google";
+import { Cinzel, Manrope } from "next/font/google";
 import "./globals.css";
 
-const headingFont = Bebas_Neue({
+const headingFont = Cinzel({
   variable: "--font-heading",
-  weight: "400",
   subsets: ["latin"],
+  weight: ["500", "700"],
 });
 
 const bodyFont = Manrope({
   variable: "--font-body",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
-  title: "iOS Calendar Wallpaper Generator",
+  title: "Ramadan Wallpaper Generator",
   description:
-    "Generate Life Calendar and Ramadan Calendar lock screen wallpapers with token-based dynamic URLs for iOS Shortcuts.",
+    "Generate a dynamic Ramadan lock-screen wallpaper URL for iOS Shortcuts using exact coordinates and daily prayer times.",
 };
 
 export default function RootLayout({
