@@ -1,36 +1,58 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# iOS Calendar Wallpaper Generator
 
-## Getting Started
+Next.js app for two dynamic lock-screen wallpaper modes:
 
-First, run the development server:
+- `Life Calendar`: week grid life progress (fixed to 100 years)
+- `Ramadan Calendar`: Hijri day + city prayer times (Fajr, Dhuhr, Asr, Maghrib, Isha, Sehri, Iftar)
+
+Both modes are stateless and Vercel-ready. No database is required.
+
+## Why No Database
+
+Each generated link includes an encoded token with config (mode + timezone + city/coords or DOB).  
+The wallpaper endpoint decodes token and renders image on each request, so one link stays dynamic daily.
+
+## APIs
+
+- `POST /api/token`
+  - Input:
+    - Life: `{ mode: "life", dateOfBirth, timeZone, title }`
+    - Ramadan: `{ mode: "ramadan", city, title }`
+    - Ramadan exact: `{ mode: "ramadan", latitude, longitude, timeZone, calculationMethod, title }`
+  - Output: `token`, `wallpaperUrl`, `setupUrl`
+- `GET /api/wallpaper/[token]?w=1290&h=2796`
+  - Returns PNG wallpaper
+  - Optional `at` query for testing a specific datetime
+
+## External Data Sources
+
+- Geocoding: Open-Meteo Geocoding API
+- Prayer/Hijri data: AlAdhan Timings API
+  - Uses `/v1/timings/{date}` with exact coordinates and configurable `method`
+
+## Local Run
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## iOS Shortcut Setup
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. `URL` action with generated `wallpaperUrl`
+2. `Get Contents of URL`
+3. `Set Wallpaper` -> Lock Screen
+4. Turn off preview/crop options
 
-## Learn More
+Automation:
 
-To learn more about Next.js, take a look at the following resources:
+- Life mode: fixed 12:00 PM daily
+- Ramadan mode: fixed early time before Fajr (iOS cannot auto-shift trigger to exact daily Fajr from API)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Deploy
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. Push repo to GitHub
+2. Import to Vercel
+3. Deploy with default Next.js settings
