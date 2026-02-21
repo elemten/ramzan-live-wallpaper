@@ -168,19 +168,19 @@ export function createRamadanWallpaperSvg(
   const cardGapX = isRosePink ? options.width * 0.02 : options.width * 0.009;
   const cardGapY = isRosePink ? options.height * 0.016 : 0;
   const cardWidth = (panelWidth - cardGapX * (columnCount - 1)) / columnCount;
-  const cardHeight = isRosePink ? options.height * 0.076 : options.height * 0.093;
-  const cardTop = isRosePink ? options.height * 0.565 : options.height * 0.572;
+  const cardHeight = isRosePink ? options.height * 0.073 : options.height * 0.093;
+  const cardTop = isRosePink ? options.height * 0.545 : options.height * 0.572;
 
   const rowCenterY = cardTop + cardHeight / 2;
   const iconSize = isRosePink
     ? Math.min(cardWidth * 0.16, cardHeight * 0.45)
     : Math.min(cardWidth * 0.34, cardHeight * 0.22);
   const mosqueBaseSize = 512;
-  const mosqueMaxWidth = isRosePink ? options.width * 0.72 : options.width * 0.78;
-  const mosqueMaxHeight = isRosePink ? options.height * 0.24 : options.height * 0.29;
+  const mosqueMaxWidth = isRosePink ? options.width * 0.68 : options.width * 0.78;
+  const mosqueMaxHeight = isRosePink ? options.height * 0.17 : options.height * 0.29;
   const mosqueScale = Math.min(mosqueMaxWidth / mosqueBaseSize, mosqueMaxHeight / mosqueBaseSize);
   const mosqueSize = mosqueBaseSize * mosqueScale;
-  const mosqueBottomInset = isRosePink ? options.height * 0.006 : options.height * 0.012;
+  const mosqueBottomInset = isRosePink ? options.height * 0.002 : options.height * 0.012;
   const mosqueX = (options.width - mosqueSize) / 2;
   const mosqueY = options.height - mosqueSize - mosqueBottomInset;
   const decorativeLayer = createThemeMotif(config.theme, options.width, options.height);
